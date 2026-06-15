@@ -515,24 +515,9 @@
 
       <!-- MES -->
       <div class="campo">
-        <label for="mes">Mes al que corresponde el anticipo <span class="req">*</span></label>
-        <div class="select-wrapper">
-          <select id="mes">
-            <option value="">Selecciona el mes</option>
-            <option>Enero</option>
-            <option>Febrero</option>
-            <option>Marzo</option>
-            <option>Abril</option>
-            <option>Mayo</option>
-            <option>Junio</option>
-            <option>Julio</option>
-            <option>Agosto</option>
-            <option>Septiembre</option>
-            <option>Octubre</option>
-            <option>Noviembre</option>
-            <option>Diciembre</option>
-          </select>
-        </div>
+        <label for="mes">Mes al que corresponde el anticipo</label>
+        <input type="text" id="mes" readonly style="background: var(--azul-claro); color: var(--azul-citolab); font-weight: 600; cursor: default;" />
+        <p class="hint" id="hint-mes"></p>
       </div>
 
       <hr class="divisor" />
@@ -575,6 +560,32 @@
 </div>
 
 <script>
+  // ── MES AUTOMÁTICO ──────────────────────────────────────────────────────────
+  const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
+                 'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
+  function calcularMesAnticipo() {
+    const hoy = new Date();
+    const dia = hoy.getDate();
+    const mes = hoy.getMonth(); // 0-11
+    const mesAnticipo = dia <= 10 ? mes : (mes + 1) % 12;
+    return MESES[mesAnticipo];
+  }
+
+  window.addEventListener('DOMContentLoaded', function() {
+    const mesCalculado = calcularMesAnticipo();
+    const inputMes = document.getElementById('mes');
+    const hintMes = document.getElementById('hint-mes');
+    inputMes.value = mesCalculado;
+    const hoy = new Date();
+    const dia = hoy.getDate();
+    if (dia <= 10) {
+      hintMes.textContent = 'Calculado automáticamente según la fecha de hoy.';
+    } else {
+      hintMes.textContent = 'Como hoy es después del día 10, corresponde al mes siguiente.';
+    }
+  });
+
   // ── UTILIDADES ──────────────────────────────────────────────────────────────
 
   function soloNumeros(str) {
@@ -692,7 +703,7 @@
     if (!area) { alert('Selecciona tu área.'); return false; }
     if (!soloNumeros(monto)) { alert('El monto debe contener solo números.'); return false; }
     if (monto !== montoC) { alert('Los montos no coinciden. Revisa la confirmación.'); return false; }
-    if (!mes) { alert('Selecciona el mes del anticipo.'); return false; }
+    if (!mes) { alert('No se pudo calcular el mes. Recarga la página.'); return false; }
     if (!autoriza) { alert('Debes aceptar la autorización de descuento para continuar.'); return false; }
 
     return true;
@@ -741,7 +752,7 @@
       return;
     }
 
-    // Construir URL con parámetros
+    // Construir URL con parámetros GET
     const params = new URLSearchParams({
       fecha_envio: datos.fecha_envio,
       nombre:      datos.nombre,
@@ -755,38 +766,21 @@
     console.log('Enviando datos:', datos);
     console.log('URL destino:', SCRIPT_URL);
 
-    // Usar iframe oculto para enviar (evita problemas CORS con Apps Script)
-    const iframe = document.createElement('iframe');
-    iframe.style.display = 'none';
-    iframe.name = 'hidden_iframe';
-    iframe.onload = function() { console.log('iframe cargado — el script respondió'); };
-    document.body.appendChild(iframe);
+    const urlConParams = SCRIPT_URL + '?' + params.toString();
+    console.log('URL completa:', urlConParams);
 
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = SCRIPT_URL;
-    form.target = 'hidden_iframe';
-    form.style.display = 'none';
-
-    for (const [key, value] of params.entries()) {
-      const input = document.createElement('input');
-      input.type = 'hidden';
-      input.name = key;
-      input.value = value;
-      form.appendChild(input);
-    }
-
-    console.log('Formulario construido, enviando...');
-    document.body.appendChild(form);
-    form.submit();
-    console.log('form.submit() ejecutado');
-
-    setTimeout(() => {
-      document.body.removeChild(form);
-      document.body.removeChild(iframe);
-    }, 3000);
-
-    mostrarExito();
+    fetch(urlConParams, {
+      method: 'GET',
+      mode: 'no-cors'
+    })
+    .then(() => {
+      console.log('Envío completado');
+      mostrarExito();
+    })
+    .catch((err) => {
+      console.error('Error:', err);
+      alert('Hubo un problema al enviar tu solicitud. Intenta nuevamente.');
+    });
   }
 
   function mostrarExito() {
