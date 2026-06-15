@@ -451,10 +451,16 @@
     <div class="formulario-contenido" id="formulario-contenido">
       <p class="obligatorio-nota">* Todos los campos son obligatorios</p>
 
-      <!-- NOMBRE -->
+      <!-- NOMBRES -->
       <div class="campo">
-        <label for="nombre">Nombre completo <span class="req">*</span></label>
-        <input type="text" id="nombre" placeholder="Ej: María González Rojas" autocomplete="off" />
+        <label for="nombres">Nombres <span class="req">*</span></label>
+        <input type="text" id="nombres" placeholder="Ej: María Fernanda" autocomplete="off" />
+      </div>
+
+      <!-- APELLIDOS -->
+      <div class="campo">
+        <label for="apellidos">Apellidos <span class="req">*</span></label>
+        <input type="text" id="apellidos" placeholder="Ej: González Rojas" autocomplete="off" />
       </div>
 
       <!-- RUT -->
@@ -688,7 +694,8 @@
   // ── MODAL ───────────────────────────────────────────────────────────────────
 
   function validarTodo() {
-    const nombre = document.getElementById('nombre').value.trim();
+    const nombres = document.getElementById('nombres').value.trim();
+    const apellidos = document.getElementById('apellidos').value.trim();
     const rut = document.getElementById('rut').value.trim();
     const correo = document.getElementById('correo').value.trim();
     const area = document.getElementById('area').value;
@@ -697,7 +704,8 @@
     const mes = document.getElementById('mes').value;
     const autoriza = document.getElementById('autoriza').checked;
 
-    if (!nombre) { alert('Ingresa tu nombre completo.'); return false; }
+    if (!nombres) { alert('Ingresa tus nombres.'); return false; }
+    if (!apellidos) { alert('Ingresa tus apellidos.'); return false; }
     if (!validarRut(rut)) { alert('El RUT ingresado no es válido.'); return false; }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo)) { alert('Ingresa un correo electrónico válido.'); return false; }
     if (!area) { alert('Selecciona tu área.'); return false; }
@@ -731,7 +739,8 @@
     cerrarModal();
 
     const datos = {
-      nombre: document.getElementById('nombre').value.trim(),
+      nombres: document.getElementById('nombres').value.trim(),
+      apellidos: document.getElementById('apellidos').value.trim(),
       rut: document.getElementById('rut').value.trim(),
       correo: document.getElementById('correo').value.trim(),
       area: document.getElementById('area').value,
@@ -755,7 +764,8 @@
     // Construir URL con parámetros GET
     const params = new URLSearchParams({
       fecha_envio: datos.fecha_envio,
-      nombre:      datos.nombre,
+      nombres:     datos.nombres,
+      apellidos:   datos.apellidos,
       rut:         datos.rut,
       correo:      datos.correo,
       area:        datos.area,
